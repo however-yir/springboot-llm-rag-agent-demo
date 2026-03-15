@@ -4,3 +4,4 @@ Commit rhythm target: 17 commits
 Sequence: 初始化 -> 核心功能 -> 修复 -> 测试 -> 文档/部署
 
 - [C01] 2026-03-14 初始化 :: chore(init): bootstrap springboot rag demo baseline [C01]
+- [C02] 2026-03-15 初始化 :: chore(init): align repo scaffold and conventions [C02]
