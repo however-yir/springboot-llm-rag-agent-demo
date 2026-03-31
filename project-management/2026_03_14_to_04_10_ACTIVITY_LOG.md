@@ -12,3 +12,4 @@ Sequence: 初始化 -> 核心功能 -> 修复 -> 测试 -> 文档/部署
 - [C07] 2026-03-24 核心功能 :: feat(core): add retrieval orchestration path [C07]
 - [C08] 2026-03-26 核心功能 :: feat(core): support configurable prompt templates [C08]
 - [C09] 2026-03-28 核心功能 :: feat(core): add answer synthesis pipeline [C09]
+- [C10] 2026-03-31 核心功能 :: feat(core): polish api wiring and runtime options [C10]
