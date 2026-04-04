@@ -15,3 +15,4 @@ Sequence: 初始化 -> 核心功能 -> 修复 -> 测试 -> 文档/部署
 - [C10] 2026-03-31 核心功能 :: feat(core): polish api wiring and runtime options [C10]
 - [C11] 2026-04-02 修复 :: fix(core): handle null context in rag response [C11]
 - [C12] 2026-04-03 修复 :: fix(core): prevent duplicate indexing edge case [C12]
+- [C13] 2026-04-04 修复 :: fix(core): tighten timeout and fallback handling [C13]
