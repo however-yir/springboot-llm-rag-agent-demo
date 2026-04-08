@@ -17,3 +17,4 @@ Sequence: 初始化 -> 核心功能 -> 修复 -> 测试 -> 文档/部署
 - [C12] 2026-04-03 修复 :: fix(core): prevent duplicate indexing edge case [C12]
 - [C13] 2026-04-04 修复 :: fix(core): tighten timeout and fallback handling [C13]
 - [C14] 2026-04-06 测试 :: test(core): add retrieval smoke coverage [C14]
+- [C15] 2026-04-08 测试 :: test(core): add regression checks for rag answers [C15]
