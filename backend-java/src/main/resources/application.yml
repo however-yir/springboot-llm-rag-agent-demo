@@ -1,0 +1,54 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: rag-react-backend
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 3s
+
+app:
+  ai-service-url: ${AI_SERVICE_URL:http://localhost:8000}
+  session:
+    ttl-seconds: ${SESSION_TTL_SECONDS:86400}
+  security:
+    jwt-secret: ${JWT_SECRET:replace-with-at-least-32-characters-secret-key}
+    jwt-expires-seconds: ${JWT_EXPIRES_SECONDS:7200}
+    demo-username: ${DEMO_USERNAME:admin}
+    demo-password: ${DEMO_PASSWORD:admin123456}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+
+logging:
+  level:
+    root: INFO
+    com.example.assistant: INFO
