@@ -1,0 +1,158 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: rag-react-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rag-react-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  chroma:
+    image: chromadb/chroma:0.5.5
+    container_name: rag-react-chroma
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./chroma-data:/chroma/chroma
+
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: rag-react-ai-service
+    restart: unless-stopped
+    env_file:
+      - .env.example
+    environment:
+      CHROMA_DIR: /data/chroma
+      OLLAMA_BASE_URL: http://ollama:11434
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MEMORY_PATH: /data/session_memory.json
+      LANGGRAPH_STATE_DB: /data/langgraph_state.db
+    volumes:
+      - ./chroma-data:/data/chroma
+      - ./logs:/app/logs
+      - ./ai-state:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      chroma:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  backend-java:
+    build:
+      context: ./backend-java
+    container_name: rag-react-backend-java
+    restart: unless-stopped
+    env_file:
+      - .env.example
+    environment:
+      SERVER_PORT: 8080
+      AI_SERVICE_URL: http://ai-service:8000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    depends_on:
+      redis:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    build:
+      context: ./frontend
+    container_name: rag-react-nginx
+    restart: unless-stopped
+    depends_on:
+      backend-java:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    ports:
+      - "80:80"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.105.0
+    container_name: rag-react-otel-collector
+    restart: unless-stopped
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./deployments/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    container_name: rag-react-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: rag-react-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./deployments/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    container_name: rag-react-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123456
+    volumes:
+      - ./deployments/observability/grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - jaeger
