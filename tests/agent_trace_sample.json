@@ -1,0 +1,38 @@
+{
+  "session_id": "s001",
+  "answer": "已为你生成下周学习安排与周报草稿。",
+  "trace": [
+    {
+      "step": 1,
+      "thought": "先查询课程安排",
+      "action": "get_course_schedule",
+      "action_input": {
+        "student_id": "20230001",
+        "week": 9
+      },
+      "observation": {
+        "courses": [
+          {
+            "day": "Mon",
+            "name": "Data Structures"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "thought": "根据课程输出周报",
+      "action": "generate_weekly_report",
+      "action_input": {
+        "owner": "20230001",
+        "highlights": [
+          "完成图算法复习",
+          "实现一次课程项目迭代"
+        ]
+      },
+      "observation": {
+        "summary": "完成图算法复习; 实现一次课程项目迭代"
+      }
+    }
+  ]
+}
